@@ -3,28 +3,68 @@ import java.util.Scanner;
 import java.awt.event.*; 
 import java.awt.*; 
 import javax.swing.*; 
-//hey
+
 class Main {
+    // Global consts
+    // -------------
+    public static final int startWidth = 600;
+    public static final int startHeight = 400;
+
+    // GUI component inits
+    // -------------------
+    // frame should not really be accessed
+    // to change screen, remove mainPanel and recreate it
     static JFrame frame;
+    static JPanel mainPanel;
     static JButton startButton;
-    static JButton button;
-    static JLabel label;
+
+    static BtnHandler btnHandler;
 
     public static void main(String[] args) {
-        BtnHandler btnHandler = new BtnHandler();
+        btnHandler = new BtnHandler();
+
         frame = new JFrame("<Program Name Here>");
+        mainPanel = new JPanel();
 
-        JPanel topbar = new JPanel();
-        label = new JLabel("Welcome to <Program Name Here>");
+        setupStartScreen();
+
+        frame.add(mainPanel);
+        frame.setSize(startWidth, startHeight);
+        frame.setVisible(true);
+    }
+
+    public static void start() {
+        clearScreen();
+    }
+
+    private static void setupStartScreen() {
+        // set up start button etc
+        JLabel startText = new JLabel("Welcome to <Program Name Here>");
+        startText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         startButton = new JButton("Start");
+        startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         startButton.addActionListener(btnHandler);
-        
-        topbar.add(label);
-        topbar.add(startButton);
+ 
+        mainPanel.add(startText);
+        mainPanel.setLayout(new BoxLayout (mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(startButton);
+    }
 
-        frame.add(topbar);
-        frame.setSize(800, 400);
-        frame.show();
+    private static void clearScreen() {
+        frame.remove(mainPanel);
+        mainPanel = new JPanel();
+        frame.add(mainPanel);
+        refreshFrame(frame);
+    }
+
+    
+    // util functions - public but not important
+    // -----------------------------------------
+
+    public static void refreshFrame(JFrame frame) {
+        frame.setVisible(false);
+        frame.setVisible(true);
     }
 
     public static String readInput() {
@@ -53,16 +93,5 @@ class Main {
             result += strToDuplicate;
         }
         return result;
-    }
-}
-
-class BtnHandler extends JFrame implements ActionListener{
-    public BtnHandler() {
-
-    }
-
-    public void actionPerformed(ActionEvent aE) {
-        String action = aE.getActionCommand();
-        System.out.println(action);
     }
 }
