@@ -1,14 +1,19 @@
 import java.util.*;
 import java.util.Scanner;
 import java.awt.event.*; 
-import java.awt.*; 
-import javax.swing.*; 
+import java.awt.*;
+import java.awt.color.*;
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;;
 
 class Main {
     // Global consts
     // -------------
-    public static final int startWidth = 600;
-    public static final int startHeight = 400;
+    public static final Dimension prefSize = new Dimension(600, 400);
+    public static final Color bgColor = new Color(0.95f, 0.95f, 0.95f);
+    public static final String userFilePath = "data/users.dat";
+    public static final String infoFilePath = "data/info.dat";
 
     // GUI component inits
     // -------------------
@@ -18,18 +23,24 @@ class Main {
     static JPanel mainPanel;
     static JButton startButton;
 
+    // Main class inits
+    // ----------------
     static BtnHandler btnHandler;
+    static Database database;
 
     public static void main(String[] args) {
+	System.out.println("Starting...");
         btnHandler = new BtnHandler();
+        database = new Database(userFilePath, infoFilePath);
 
         frame = new JFrame("<Program Name Here>");
-        mainPanel = new JPanel();
 
         setupStartScreen();
 
         frame.add(mainPanel);
-        frame.setSize(startWidth, startHeight);
+        frame.setPreferredSize(prefSize);
+        frame.setSize(prefSize);
+        //frame.pack();
         frame.setVisible(true);
     }
 
@@ -39,6 +50,9 @@ class Main {
 
     private static void setupStartScreen() {
         // set up start button etc
+        mainPanel = new JPanel();
+        mainPanel.setBackground(bgColor);
+
         JLabel startText = new JLabel("Welcome to <Program Name Here>");
         startText.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -54,6 +68,7 @@ class Main {
     private static void clearScreen() {
         frame.remove(mainPanel);
         mainPanel = new JPanel();
+        mainPanel.setBackground(bgColor);
         frame.add(mainPanel);
         refreshFrame(frame);
     }
