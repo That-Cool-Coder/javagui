@@ -1,11 +1,21 @@
-import java.util.*;
-import java.util.Scanner;
-import java.awt.event.*; 
 import java.awt.*;
-import java.awt.color.*;
+import java.util.Arrays;
+
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;;
+
+// Enums
+// -----
+enum Status {
+    OK,
+    WARNING,
+    FATAL_ERROR
+}
+
+enum GuiMode {
+    LOADING_GUI,
+    START_SCREEN,
+    NEXT_SCREEN
+}
 
 class Main {
     // Global consts
@@ -22,30 +32,49 @@ class Main {
     static JFrame frame;
     static JPanel mainPanel;
     static JButton startButton;
+    // (array of temporary components that you need for later)
+    static JLabel[] tempLabels = new JLabel[10];
 
     // Main class inits
     // ----------------
     static BtnHandler btnHandler;
     static Database database;
 
+    // Misc inits
+    // ----------
+    static GuiMode guiMode = GuiMode.LOADING_GUI;
+
     public static void main(String[] args) {
-	System.out.println("Starting...");
+        System.out.println("Starting...");
         btnHandler = new BtnHandler();
         database = new Database(userFilePath, infoFilePath);
 
         frame = new JFrame("<Program Name Here>");
 
-        setupStartScreen();
-
-        frame.add(mainPanel);
         frame.setPreferredSize(prefSize);
         frame.setSize(prefSize);
-        //frame.pack();
-        frame.setVisible(true);
+
+        setupStartScreen();
+        updateMainFrame();
+
+        guiMode = GuiMode.START_SCREEN;
     }
 
     public static void start() {
-        clearScreen();
+        guiMode = GuiMode.NEXT_SCREEN;
+        setupNextScreen();
+        updateMainFrame();
+    }
+
+    public static void test() {
+        // tempLabels[0] should be set in setupNextScreen
+        ResultAndStatus results = database.readInfoFile();
+        if (results.status == Status.OK) {
+            tempLabels[0].setText(results.result);
+        }
+        else {
+            tempLabels[0].setText("problem reading file!");
+        }
     }
 
     private static void setupStartScreen() {
@@ -61,16 +90,45 @@ class Main {
         startButton.addActionListener(btnHandler);
  
         mainPanel.add(startText);
-        mainPanel.setLayout(new BoxLayout (mainPanel, BoxLayout.Y_AXIS));
         mainPanel.add(startButton);
+        mainPanelCenterAlign();
+    }
+
+    private static void setupNextScreen() {
+        clearScreen();
+        clearTempLabels();
+
+        JLabel label = new JLabel("This is the hub");
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        tempLabels[0] = label;
+
+        JButton readButton = new JButton("Read file!");
+        readButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        readButton.addActionListener(btnHandler);
+
+        mainPanel.add(label);
+        mainPanel.add(readButton);
+        mainPanelCenterAlign();
     }
 
     private static void clearScreen() {
         frame.remove(mainPanel);
         mainPanel = new JPanel();
         mainPanel.setBackground(bgColor);
+        updateMainFrame();
+    }
+
+    private static void updateMainFrame() {
         frame.add(mainPanel);
         refreshFrame(frame);
+    }
+
+    private static void clearTempLabels() {
+        Arrays.fill(tempLabels, null);
+    }
+
+    private static void mainPanelCenterAlign() {
+        mainPanel.setLayout(new BoxLayout (mainPanel, BoxLayout.Y_AXIS));
     }
 
     
