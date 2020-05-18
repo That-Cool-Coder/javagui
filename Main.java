@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.Arrays;
-
 import javax.swing.*;
+import java.util.ArrayList;
 
 // Enums
 // -----
@@ -22,6 +22,7 @@ class Main {
     // -------------
     public static final Dimension prefSize = new Dimension(600, 400);
     public static final Color bgColor = new Color(0.95f, 0.95f, 0.95f);
+    public static final String dataDirPath = "data/";
     public static final String userFilePath = "data/users.dat";
     public static final String infoFilePath = "data/info.dat";
 
@@ -31,14 +32,14 @@ class Main {
     // to change screen, remove mainPanel and recreate it
     static JFrame frame;
     static JPanel mainPanel;
-    static JButton startButton;
-    // (array of temporary components that you need for later)
-    static JLabel[] tempLabels = new JLabel[10];
+    // (arrayList of temporary components that you need for later)
+    static ArrayList<JLabel> tempLabels = new ArrayList<JLabel>();
 
     // Main class inits
     // ----------------
     static BtnHandler btnHandler;
     static Database database;
+    static Util util;
 
     // Misc inits
     // ----------
@@ -47,7 +48,8 @@ class Main {
     public static void main(String[] args) {
         System.out.println("Starting...");
         btnHandler = new BtnHandler();
-        database = new Database(userFilePath, infoFilePath);
+        database = new Database(dataDirPath, userFilePath, infoFilePath);
+        util = new Util();
 
         frame = new JFrame("<Program Name Here>");
 
@@ -60,6 +62,16 @@ class Main {
         guiMode = GuiMode.START_SCREEN;
     }
 
+    public static void safelyCrash() {
+        System.out.println("\n\n\n\n\n\nFATAL ERROR");
+        System.out.println("Press enter to close\n\n\n");
+        util.readInput(); // pause until enter press
+        System.exit(0);
+    }
+
+    // Button onclicks
+    // ---------------
+
     public static void start() {
         guiMode = GuiMode.NEXT_SCREEN;
         setupNextScreen();
@@ -69,13 +81,29 @@ class Main {
     public static void test() {
         // tempLabels[0] should be set in setupNextScreen
         ResultAndStatus results = database.readInfoFile();
+
+        JLabel resultLabel = new JLabel("Welcome to <Program Name Here>");
+        resultLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         if (results.status == Status.OK) {
-            tempLabels[0].setText(results.result);
+            String result = results.result;
+            if (result.length() == 0 ) {
+                result = "(empty file)";
+            }
+            resultLabel.setText("File contents: " + result);
         }
         else {
-            tempLabels[0].setText("problem reading file!");
+            resultLabel.setText("problem reading file!");
         }
+        
+        addVerticalSpace(mainPanel, 50);
+        mainPanel.add(resultLabel);
+        mainPanelCenterAlign();
+        refreshFrame(frame);
     }
+
+    // Main screen editors
+    // -------------------
 
     private static void setupStartScreen() {
         // set up start button etc
@@ -85,31 +113,37 @@ class Main {
         JLabel startText = new JLabel("Welcome to <Program Name Here>");
         startText.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        startButton = new JButton("Start");
+        JButton startButton = new JButton("Start");
         startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         startButton.addActionListener(btnHandler);
- 
+        
+        addVerticalSpace(mainPanel, 20);
         mainPanel.add(startText);
+        addVerticalSpace(mainPanel, 50);
         mainPanel.add(startButton);
         mainPanelCenterAlign();
     }
 
     private static void setupNextScreen() {
+        // this is not a generic function, it's just a random screen that I called nextScreen for testing
         clearScreen();
-        clearTempLabels();
 
         JLabel label = new JLabel("This is the hub");
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        tempLabels[0] = label;
 
         JButton readButton = new JButton("Read file!");
         readButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         readButton.addActionListener(btnHandler);
-
+   
+        addVerticalSpace(mainPanel, 20);
         mainPanel.add(label);
+        addVerticalSpace(mainPanel, 50);
         mainPanel.add(readButton);
         mainPanelCenterAlign();
     }
+
+    // Small private functions related to the screen
+    // ---------------------------------------------
 
     private static void clearScreen() {
         frame.remove(mainPanel);
@@ -124,47 +158,18 @@ class Main {
     }
 
     private static void clearTempLabels() {
-        Arrays.fill(tempLabels, null);
+        tempLabels.clear();
+    }
+
+    private static void addVerticalSpace(JPanel panel, int pixels) {
+        panel.add(Box.createVerticalStrut(pixels));
     }
 
     private static void mainPanelCenterAlign() {
         mainPanel.setLayout(new BoxLayout (mainPanel, BoxLayout.Y_AXIS));
     }
 
-    
-    // util functions - public but not important
-    // -----------------------------------------
-
-    public static void refreshFrame(JFrame frame) {
-        frame.setVisible(false);
+    private static void refreshFrame(JFrame frame) {
         frame.setVisible(true);
-    }
-
-    public static String readInput() {
-        String input = System.console().readLine(); 
-        return input;
-    }
-
-    public static int randint(int min, int max) {
-        return (int) (Math.random() * (max - min)) + min;
-    }
-
-    public static int constrain(int val, int min, int max) {
-        // include min and max
-        if (val < min) {
-            val = min;
-        }
-        else if (val > max) {
-            val = max;
-        }
-        return val;
-    }
-
-    public static String duplicateStr(String strToDuplicate, int amount) {
-        String result = "";
-        for (int i = 0; i < amount; i ++) {
-            result += strToDuplicate;
-        }
-        return result;
     }
 }
