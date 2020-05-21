@@ -96,7 +96,19 @@ class Database {
     public Status saveNote(Note note) {
         Status status = Status.WARNING;
 
-        // save note
+        try (FileOutputStream fos = new FileOutputStream(this.infoDirPath + note.fileName + ".dat");
+            ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+
+            // write object to file
+            oos.writeObject(note);
+            status = Status.OK;
+
+        } catch (IOException ex) {
+            this.util.printStrLn("Error saving note");
+            status = Status.FATAL_ERROR;
+            // don't crash as it's not a open error and doesn't affect other files (I think)
+        }
+
         return status;
     }
 
@@ -138,7 +150,12 @@ class Database {
     private void initDataFilesIfNeeded() {
         // this assumes that the main dir has already been made/validated
         
-        this.makeFileChecks(this.userFilePath, false);
+        // if the user file doesn't exist, init it with an empty arrayList
+        File file = new File(this.userFilePath);
+        if (! file.exists()) {
+            ArrayList<User> userList = new ArrayList<User>();
+            this.saveUserList(userList);
+        }
 
         // set up info dir
         File dir = new File(this.infoDirPath);
@@ -156,7 +173,7 @@ class Database {
     // Generic file edit functions
     // ---------------------------
 
-    private Status makeFileChecks(
+    private BoolAndStatus makeFileChecks(
         String pathToFile,
         boolean errorHandled
     ) {
@@ -164,12 +181,15 @@ class Database {
         // returns an status. safely crashes if errorHandled is false
 
         Status status = Status.WARNING; // start with status = warning for least of evils
+        boolean fileMade = false;
 
         File file = new File(pathToFile);
+        System.out.println(file.exists());
         if (! file.exists()) {
             try {
                 file.createNewFile();
                 status = Status.OK;
+                fileMade = true;
             }
             catch (IOException e){
                 if (! errorHandled) {
@@ -179,7 +199,7 @@ class Database {
                 status = Status.FATAL_ERROR;
             }
         }
-        return status;
+        return new BoolAndStatus(fileMade, status);
     }
 
     // Small reader functions

@@ -1,2 +1,2 @@
-javac Main.java
-java Main
+call compile.bat
+call run.bat

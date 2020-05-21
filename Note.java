@@ -1,8 +1,9 @@
+import java.io.Serializable;
 
-class Note {
+class Note implements Serializable{
 
     String title;
-    String fileName;
+    String fileName; // filename is not a path, doesn't include file extensions
     String content;
     String ownerName;
 

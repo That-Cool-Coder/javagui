@@ -16,7 +16,8 @@ enum GuiMode {
     LOADING_GUI,
     LOGIN_SCREEN,
     HOME_SCREEN,
-    NEW_ACCT_SCREEN
+    NEW_ACCT_SCREEN,
+    NOTE_EDIT_SCREEN
 }
 
 class Main {
@@ -123,6 +124,20 @@ class Main {
         }
     }
 
+    public static void startNewNote() {
+        setupNoteEditScreen();
+    }
+
+    public static void saveNote() {
+        String title    = tempTextFields.get(0).getText();
+        String fileName = tempTextFields.get(1).getText();
+        String subject  = tempTextFields.get(2).getText();
+        String body     = tempTextFields.get(3).getText();
+
+        Note note = new Note(title, fileName, subject, body);
+        database.saveNote(note);
+    }
+
     // Main screen editors
     // -------------------
 
@@ -163,10 +178,15 @@ class Main {
 
         JLabel label = new JLabel("Good job logging in!");
 
+        JButton newNoteBtn = new JButton("Start new note");
+        newNoteBtn.addActionListener(btnHandler);
+
         JButton logoutBtn = new JButton("Logout");
         logoutBtn.addActionListener(btnHandler);
 
+        mainPanelCenterAlign();
         mainPanel.add(label);
+        mainPanel.add(newNoteBtn);
         mainPanel.add(logoutBtn);
 
         guiMode = GuiMode.HOME_SCREEN;
@@ -200,6 +220,35 @@ class Main {
         mainPanel.add(cancelBtn);
 
         guiMode = GuiMode.NEW_ACCT_SCREEN;
+        updateMainFrame();
+    }
+
+    private static void setupNoteEditScreen() {
+        clearScreen();
+        clearTempItems();
+
+        JTextField titleField = new JTextField(30);
+        tempTextFields.add(titleField);
+
+        JTextField fileNameField = new JTextField(30);
+        tempTextFields.add(fileNameField);
+
+        JTextField subjectField = new JTextField(60);
+        tempTextFields.add(subjectField);
+
+        JTextField bodyField = new JTextField(70);
+        tempTextFields.add(bodyField);
+
+        JButton saveBtn = new JButton("Save");
+        saveBtn.addActionListener(btnHandler);
+
+        mainPanel.add(titleField);
+        mainPanel.add(fileNameField);
+        mainPanel.add(subjectField);
+        mainPanel.add(bodyField);
+        mainPanel.add(saveBtn);
+
+        guiMode = GuiMode.NOTE_EDIT_SCREEN;
         updateMainFrame();
     }
 

@@ -1,2 +1,2 @@
-javac Main.java
-java Main
+source compile.sh
+source run.sh
