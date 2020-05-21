@@ -1,4 +1,6 @@
-class ResultAndStatus { 
+import java.util.ArrayList;
+
+class ResultAndStatus {
     // very generic usable function
 
     String result;
@@ -13,17 +15,43 @@ class ResultAndStatus {
     }
 }
 
+class UserAndStatus {
+    User user;
+    Status status;
+
+    public UserAndStatus(
+        User user,
+        Status status
+    ) {
+        this.user = user;
+        this.status = status;
+    }
+}
+
 class UserListAndStatus {
     // very specific but based on the base resultAndStatus with the types switched
 
-    User[] userList;
+    ArrayList<User> userList;
     Status status;
 
     public UserListAndStatus(
-        User[] userList,
+        ArrayList<User> userList,
         Status status
     ) {
         this.userList = userList;
+        this.status = status;
+    }
+}
+
+class BoolAndStatus {
+    Boolean bool;
+    Status status;
+
+    public BoolAndStatus(
+        Boolean bool,
+        Status status
+    ) {
+        this.bool = bool;
         this.status = status;
     }
 }

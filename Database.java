@@ -8,114 +8,246 @@ import java.io.ObjectInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 
+import java.util.ArrayList;
+
 class Database {
     String dataDirPath;
     String userFilePath;
-    String infoFilePath;
+    String infoDirPath;
 
     Util util;
 
     public Database(
         String dataDirPath,
         String userFilePath,
-        String infoFilePath
+        String infoDirPath
     ) {
         this.util = new Util();
 
         this.dataDirPath = dataDirPath;
         this.userFilePath = userFilePath;
-        this.infoFilePath = infoFilePath;
+        this.infoDirPath = infoDirPath;
 
-        this.initDataDirIfNeeded();
-
+        this.initDataDirIfNeeded(false);
     }
 
-    public void initDataDirIfNeeded() {
+    // Main callables
+    // --------------
+
+    public BoolAndStatus passwordCorrect(
+        String username,
+        String password
+    ) {
+        // returns Status.warning if user not found
+
+        Status status = Status.WARNING;
+        Boolean passwordCorrect = false;
+
+        UserListAndStatus uls = this.readUserFile(false);
+        
+        User user = this.findUserByName(username, uls.userList);
+        if (user != null) {
+            // (if user found)
+
+            if (password.equals(user.password)) {
+                passwordCorrect = true;
+            }
+            else {
+                passwordCorrect = false;
+            }
+            status = Status.OK;
+        }
+        else {
+            // (if user not found)
+            status = Status.WARNING;
+        }
+        return new BoolAndStatus(passwordCorrect, status);
+    }
+
+    public Status createNewAcct(
+        String username,
+        String password
+    ) {
+        // returns OK if new acct was made, WARNING if username is duplicated, or FATAL_ERROR
+        Status status = Status.WARNING;
+
+        UserListAndStatus uls = this.readUserFile(false);
+
+        if (uls.status == Status.OK) {
+            User user = this.findUserByName(username, uls.userList);
+            if (user == null) {
+                // (if user not already existing)
+                User newUser = new User(username, password);
+                uls.userList.add(newUser);
+                this.saveUserList(uls.userList);
+                status = Status.OK;
+            }
+            else {
+                // (if user already exists)
+                status = Status.WARNING;
+            }
+        }
+        else {
+            status = Status.FATAL_ERROR;
+        }
+        return status;
+    }
+
+    public Status saveNote(Note note) {
+        Status status = Status.WARNING;
+
+        // save note
+        return status;
+    }
+
+
+    // Init functions
+    // --------------
+
+    private Status initDataDirIfNeeded(boolean errorHandled) {
+        // initialise the dir that holds program data if it doesn't exist already
+
+        Status status = Status.WARNING;
+
         File dir = new File(this.dataDirPath);
         if (! dir.exists()) {
             boolean success = dir.mkdirs();
             if (success) {
-                this.initDataFilesIfNeeded();
+                status = Status.OK;
             }
             else {
-                this.util.printStrLn("Could not make data dir");
+                if (! errorHandled) {
+                    this.util.printStrLn("Could not make data dir");
+                    Main.safelyCrash();
+                }
+                status = Status.FATAL_ERROR;
+            }
+        }
+        else {
+            // if dir already exists, set status to OK so that the next part will
+            // know that everything is ok
+            status = Status.OK;
+        }
+        
+        if (status == Status.OK) {
+            this.initDataFilesIfNeeded();
+        }
+        return status;
+    }
+
+    private void initDataFilesIfNeeded() {
+        // this assumes that the main dir has already been made/validated
+        
+        this.makeFileChecks(this.userFilePath, false);
+
+        // set up info dir
+        File dir = new File(this.infoDirPath);
+        if (! dir.exists()) {
+            boolean success = dir.mkdirs();
+            // if success do nothing
+            // else say error
+            if (! success) {
+                this.util.printStrLn("Could not make info dir");
+                Main.safelyCrash();
             }
         }
     }
 
-    public void initDataFilesIfNeeded() {
-        // this assumes that the dir has already been made/validated
-        
-        this.makeFileChecks(this.userFilePath);
-        this.makeFileChecks(this.infoFilePath);
-    }
+    // Generic file edit functions
+    // ---------------------------
 
-    public boolean makeFileChecks(String pathToFile) {
-        boolean success = false;
+    private Status makeFileChecks(
+        String pathToFile,
+        boolean errorHandled
+    ) {
+        // this makes a file if it doesn't exist, uses a try/catch,
+        // returns an status. safely crashes if errorHandled is false
+
+        Status status = Status.WARNING; // start with status = warning for least of evils
 
         File file = new File(pathToFile);
         if (! file.exists()) {
             try {
                 file.createNewFile();
-                success = true;
+                status = Status.OK;
             }
             catch (IOException e){
-                this.util.printStrLn("ERROR: could not make file " + pathToFile);
-                success = false;
+                if (! errorHandled) {
+                    this.util.printStrLn("ERROR: could not make file " + pathToFile);
+                    Main.safelyCrash();
+                }
+                status = Status.FATAL_ERROR;
             }
         }
-        return success;
+        return status;
     }
 
-    public ResultAndStatus readInfoFile() {
-        // set up vars so that they will still exist if error occurs
-        String content = "";
-        Status status = Status.FATAL_ERROR;
+    // Small reader functions
+    // ----------------------
 
-        try {
-            File myObj = new File(this.infoFilePath);
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-                String data = myReader.nextLine();
-                content += data;
+    private UserListAndStatus readUserFile(boolean errorHandled) {
+        ArrayList<User> userList = new ArrayList<User>();
+        Status status = Status.WARNING;
+
+        try {           
+            FileInputStream fis = new FileInputStream(this.userFilePath);
+            ObjectInputStream ois = new ObjectInputStream(fis);         
+            userList = (ArrayList<User>)ois.readObject();
+            ois.close();
+            status = Status.OK;    
+        }       
+        catch (IOException e) {
+            if (! errorHandled) {
+                this.util.printStrLn("Fatal Error");
+                e.printStackTrace();
             }
-            myReader.close();
-            status = Status.OK;
-
-        }
-        catch (FileNotFoundException e) {
             status = Status.FATAL_ERROR;
-            // !DEBUG!
-            e.printStackTrace();
-            Main.safelyCrash();
+        }       
+        catch (ClassNotFoundException e) {
+            if (! errorHandled) {
+                this.util.printStrLn("Fatal Error");
+                e.printStackTrace();
+            }
         }
-
-        ResultAndStatus returnVal = new ResultAndStatus(content, status);
-        return returnVal;
+        return new UserListAndStatus(userList, status);
     }
 
-    //private UserListAndStatus readUserList() {
-        
-    //}
+    //private void
 
-    private Status saveUserList(User[] userList) {
-        Status status = Status.FATAL_ERROR;
-
+    private void saveUserList(ArrayList<User> userList) {
+        // !DEBUG!
         try {
-            File userFile = new File(this.userFilePath);
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(userFile));
+            // not complete - add bool errorHandled, status returns
+            FileOutputStream fout = new FileOutputStream(this.userFilePath);
+            ObjectOutputStream oos = new ObjectOutputStream(fout);
             oos.writeObject(userList);
-            oos.flush();
-            oos.close();
-            status = Status.OK;
+            fout.close();
         }
         catch (IOException e) {
-            status = Status.FATAL_ERROR;
-            // !DEBUG!
-            e.printStackTrace();
             Main.safelyCrash();
         }
+    }
 
-        return status;
+    // Small data-manipulation functions
+    // ---------------------------------
+
+    private User findUserByName(
+        String username,
+        ArrayList<User> userList
+    ) {
+        // returns null if user is not found, assumes no duplicate usernames
+
+        User user = null;
+
+        for (int idx = 0; idx < userList.size(); idx ++) {
+            User crntUser = userList.get(idx);
+
+            if (crntUser.name.equalsIgnoreCase(username)) {
+                user = crntUser;
+                break;
+            }
+        }
+
+        return user;
     }
 }
