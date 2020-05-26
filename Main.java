@@ -153,23 +153,37 @@ class Main {
         startText.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JTextField usernameField = new JTextField(50);
+        usernameField.setPreferredSize(
+                new Dimension(250, usernameField.getPreferredSize().height));
+        usernameField.setMaximumSize(usernameField.getPreferredSize());
+        usernameField.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         tempTextFields.add(usernameField);
 
         JTextField passwordField = new JTextField(50);
+        passwordField.setPreferredSize(
+                new Dimension(250, passwordField.getPreferredSize().height));
+        passwordField.setMaximumSize(passwordField.getPreferredSize());
+        passwordField.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         tempTextFields.add(passwordField);
 
         JButton loginBtn = new JButton("Login");
+        loginBtn.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         loginBtn.addActionListener(btnHandler);
 
         JButton newAcctBtn = new JButton("Create new account");
+        newAcctBtn.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         newAcctBtn.addActionListener(btnHandler);
         
         mainPanelCenterAlign();
 
         mainPanel.add(startText);
+        addVerticalSpace(mainPanel, 50);
         mainPanel.add(usernameField);
+        addVerticalSpace(mainPanel, 20);
         mainPanel.add(passwordField);
+        addVerticalSpace(mainPanel, 20);
         mainPanel.add(loginBtn);
+        addVerticalSpace(mainPanel, 10);
         mainPanel.add(newAcctBtn);
 
         guiMode = GuiMode.LOGIN_SCREEN;
@@ -280,8 +294,8 @@ class Main {
         tempTextFields.clear();
     }
 
-    private static Component makeVerticalSpace(JPanel panel, int pixels) {
-        return Box.createVerticalStrut(pixels);
+    private static void addVerticalSpace(JPanel panel, int pixels) {
+        panel.add(Box.createVerticalStrut(pixels));
     }
 
     private static void mainPanelCenterAlign() {
