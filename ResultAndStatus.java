@@ -55,3 +55,16 @@ class BoolAndStatus {
         this.status = status;
     }
 }
+
+class NoteAndStatus {
+    Note note;
+    Status status;
+
+    public NoteAndStatus(
+        Note note,
+        Status status
+    ) {
+        this.note = note;
+        this.status = status;
+    }
+}

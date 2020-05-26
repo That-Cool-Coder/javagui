@@ -24,6 +24,10 @@ class BtnHandler extends JFrame implements ActionListener {
             Main.startNewNote();
         }
 
+        if (guiMode == GuiMode.HOME_SCREEN && btnName == "Open note") {
+            Main.openNote();
+        }
+
         if (guiMode == GuiMode.NEW_ACCT_SCREEN && btnName == "Create Account") {
             Main.tryMakeNewAcct();
         }

@@ -128,6 +128,10 @@ class Main {
         setupNoteEditScreen();
     }
 
+    public static void openNote() {
+        // open folder dlg
+    }
+
     public static void saveNote() {
         String title    = tempTextFields.get(0).getText();
         String fileName = tempTextFields.get(1).getText();
@@ -181,12 +185,16 @@ class Main {
         JButton newNoteBtn = new JButton("Start new note");
         newNoteBtn.addActionListener(btnHandler);
 
+        JButton openNoteBtn = new JButton("Open note");
+        openNoteBtn.addActionListener(btnHandler);
+
         JButton logoutBtn = new JButton("Logout");
         logoutBtn.addActionListener(btnHandler);
 
         mainPanelCenterAlign();
         mainPanel.add(label);
         mainPanel.add(newNoteBtn);
+        mainPanel.add(openNoteBtn);
         mainPanel.add(logoutBtn);
 
         guiMode = GuiMode.HOME_SCREEN;

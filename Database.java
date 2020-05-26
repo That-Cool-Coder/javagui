@@ -112,6 +112,13 @@ class Database {
         return status;
     }
 
+    public NoteAndStatus openNote(String pathToNote) {
+        Status status = Status.WARNING;
+        Note note = null;
+
+        return new NoteAndStatus(note, status);
+    }
+
 
     // Init functions
     // --------------

@@ -1,2 +1,2 @@
-source compile.sh
-source run.sh
+sh compile.sh
+sh run.sh
